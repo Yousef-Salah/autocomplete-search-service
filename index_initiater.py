@@ -17,7 +17,9 @@ class IndexInitiator:
             es.indices.delete(index=self.__index_name)
 
         es.indices.create(
-            index=self.__index_name, mappings=self.__configurations()["mappings"]
+            index=self.__index_name,
+            settings=self.__configurations()["settings"],
+            mappings=self.__configurations()["mappings"],
         )
         print("index created")
         return es
@@ -30,13 +32,29 @@ class IndexInitiator:
 
     def __get_settings(self):
         return {
-            "number_of_shards": "1",
+            "analysis": {
+                "filter": {
+                    "ngram_filter": {
+                        "type": "ngram",
+                        "min_gram": 3,
+                        "max_gram": 4,
+                    }
+                },
+                "analyzer": {
+                    "text_processing": {
+                        "type": "custom",
+                        "tokenizer": "standard",
+                        "filter": ["lowercase", "ngram_filter"],
+                    }
+                },
+            },
+            "number_of_shards": 1,
         }
 
     def __get_mappings(self):
         return {
             "properties": {
-                # "date": {"type": "date", "format": "dd-MMM-yyyy HH:mm:ss.SS"},
+                "date": {"type": "date", "format": "dd-MMM-yyyy HH:mm:ss.SS"},
                 "topics": {
                     "type": "keyword",
                     "ignore_above": 256,
@@ -62,12 +80,17 @@ class IndexInitiator:
                     "ignore_above": 256,
                 },
                 "title": {
-                    "type": "keyword",
-                    "ignore_above": 256,
+                    "type": "text",
+                    "analyzer": "text_processing",
                 },
+                # TODO: make sure to get rid of tags elements
                 "content": {
                     "type": "text",
-                    "analyzer": "standard",
+                    "analyzer": "text_processing",
+                },
+                "place": {
+                    "type": "keyword",
+                    "ignore_above": 256,
                 },
                 "location": {
                     "type": "geo_point",

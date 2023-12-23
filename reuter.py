@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any
+from typing import Any, Tuple
 
 import spacy
 from bs4 import BeautifulSoup, SoupStrainer
@@ -43,18 +43,14 @@ class ReutersParser:
             title = self.extract_text(content.find("text").find("title"))
             body = self.extract_text(content.find("text").find("body"))
             dateline = self.extract_text(content.find("text").find("dateline"))
-            doc = nlp(dateline)
-            locations = [ent.text for ent in doc.ents if ent.label_ == "GPE"]
-            location = locations[0] if len(locations) else ""
-            longitude = ""
-            latitude = ""
+            location, longitude, latitude = self.__get_location_details(
+                dateline, title, body
+            )
 
-            if len(locations):
-                location = geolocator.geocode(locations[0])
+            if location == None:
+                print((location, longitude, latitude))
 
-                if location:
-                    longitude = location.longitude
-                    latitude = location.latitude
+                exit()
 
             record = {
                 # "date": date,
@@ -67,6 +63,7 @@ class ReutersParser:
                 "title": title,
                 "body": body,
                 "dateline": dateline,
+                "place": location,
                 "location": {
                     "lat": latitude if latitude != "" else "0",
                     "lon": longitude if longitude != "" else "0",
@@ -79,3 +76,42 @@ class ReutersParser:
             counter += 1
 
         return records
+
+    def __get_location_details(
+        self, dateline: str, title: str, body: str
+    ) -> Tuple[str, float, float]:
+        # try to get locations from dateline
+        texts = [dateline, title, body]
+
+        for text in texts:
+            text_location_details = self.__extract_geocode_from_text(text)
+
+            if text_location_details:
+                return text_location_details
+
+        return "Null Island", 0, 0
+
+    def __extract_locations(self, text: str) -> list:
+        text = str(text)
+        processed_text = nlp(text.lower())
+        return [ent.text for ent in processed_text.ents if ent.label_ == "GPE"]
+
+    def __extract_geocode(self, location: str) -> Tuple[float, float] | bool:
+        geocodes = geolocator.geocode(location)
+
+        if geocodes:
+            return geocodes.longitude, geocodes.latitude
+
+        return False
+
+    def __extract_geocode_from_text(self, text: str) -> Tuple[str, float, float] | bool:
+        text_locations = self.__extract_locations(text)
+        text_geocodes = list(
+            map(lambda x: (x, self.__extract_geocode(x)), text_locations)
+        )
+        filtered_text_geocodes = list(filter(lambda x: x[1] != False, text_geocodes))
+
+        if len(filtered_text_geocodes):
+            location, gecodes = filtered_text_geocodes[0]
+            return location, gecodes[0], gecodes[1]
+        return False

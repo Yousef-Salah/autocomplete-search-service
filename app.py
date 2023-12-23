@@ -14,10 +14,10 @@ es = IndexInitiator(index_name).create()
 folder_path = "data"
 files_list = os.listdir("data")
 
+# TODO: multiprocess this step
 for file in files_list:
     if file.endswith(".sgm"):
         records = ReutersParser().parse(f"{folder_path}/{file}")
-        print("parsed successfully")
         res = es.bulk(index=index_name, operations=records)
         if res["errors"]:
             print(res)

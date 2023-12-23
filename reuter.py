@@ -1,17 +1,19 @@
 import json
 import os
+import re
 from typing import Any, Tuple
 
 import spacy
 from bs4 import BeautifulSoup, SoupStrainer
 from geopy.geocoders import Nominatim
+from unidecode import unidecode
 
 nlp = spacy.load("en_core_web_lg")
 geolocator = Nominatim(user_agent="smart")
 
 
 class ReutersParser:
-    def extract_text(self, element: Any) -> str:
+    def __extract_text(self, element: Any) -> str:
         if element:
             return element.get_text().strip()
 
@@ -27,9 +29,11 @@ class ReutersParser:
 
         counter = 1
         for content in reuters:
+            if counter == 10:
+                return records
             string_converter = lambda x: x.get_text()
 
-            # date = self.extract_text(content.find("date")).replace("'", "").lower()
+            date = self.__precess_date(content.find("date"))
             topics = list(map(string_converter, content.find("topics").findAll("d")))
             places = list(map(string_converter, content.find("places").findAll("d")))
             people = list(map(string_converter, content.find("people").findAll("d")))
@@ -40,9 +44,9 @@ class ReutersParser:
             companies = list(
                 map(string_converter, content.find("companies").findAll("d"))
             )
-            title = self.extract_text(content.find("text").find("title"))
-            body = self.extract_text(content.find("text").find("body"))
-            dateline = self.extract_text(content.find("text").find("dateline"))
+            title = self.__extract_text(content.find("text").find("title"))
+            body = self.__extract_text(content.find("text").find("body"))
+            dateline = self.__extract_text(content.find("text").find("dateline"))
             location, longitude, latitude = self.__get_location_details(
                 dateline, title, body
             )
@@ -53,7 +57,7 @@ class ReutersParser:
                 exit()
 
             record = {
-                # "date": date,
+                "date": date,
                 "topics": topics,
                 "places": places,
                 "people": people,
@@ -115,3 +119,16 @@ class ReutersParser:
             location, gecodes = filtered_text_geocodes[0]
             return location, gecodes[0], gecodes[1]
         return False
+
+    def __precess_date(self, date: Any) -> str:
+        valid_date_length = 20
+        text = self.__extract_text(date)
+        text = text.strip()
+        text: str = unidecode(text)
+        text = re.sub(r"\..*$", "", text)
+
+        if len(text) != valid_date_length:
+            text = "0" + text
+
+        text = text[:4] + str.lower(text[4]) + str.lower(text[5]) + text[6:]
+        return re.sub(r"\..*$", "", text)

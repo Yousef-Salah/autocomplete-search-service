@@ -32,6 +32,8 @@ class IndexInitiator:
 
     def __get_settings(self):
         return {
+            "number_of_shards": 2,
+            "number_of_replicas": 1,
             "analysis": {
                 "filter": {
                     "ngram_filter": {
@@ -54,7 +56,10 @@ class IndexInitiator:
     def __get_mappings(self):
         return {
             "properties": {
-                "date": {"type": "date", "format": "dd-MMM-yyyy HH:mm:ss.SS"},
+                "date": {
+                    "type": "date",
+                    "format": "dd-MMM-yyyy HH:mm:ss",
+                },
                 "topics": {
                     "type": "keyword",
                     "ignore_above": 256,

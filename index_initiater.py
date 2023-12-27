@@ -100,5 +100,7 @@ class IndexInitiator:
                 "location": {
                     "type": "geo_point",
                 },
+                # TODO: return multiple georeferences
+                # avg to estimate geolocation
             }
         }

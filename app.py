@@ -5,7 +5,7 @@ from elasticsearch import Elasticsearch
 from geopy.geocoders import Nominatim
 
 from index_initiater import IndexInitiator
-from reuter import ReutersParser
+from reuter_file_parser import ReutersParser
 
 index_name = "reuters"
 

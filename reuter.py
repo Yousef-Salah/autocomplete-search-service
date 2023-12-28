@@ -1,6 +1,8 @@
 import json
 import os
 import re
+from functools import reduce
+from time import sleep
 from typing import Any, Tuple
 
 import spacy
@@ -20,6 +22,7 @@ class ReutersParser:
         return ""
 
     def parse(self, file_path) -> list[dict]:
+        # TODO: Refactor code
         with open(file_path) as f:
             file_content = f.read()
         soup = BeautifulSoup(file_content, features="html.parser")
@@ -29,9 +32,11 @@ class ReutersParser:
 
         counter = 1
         for content in reuters:
-            if counter == 10:
+            if counter % 10 == 0:
                 return records
             string_converter = lambda x: x.get_text()
+
+            whole_rueter_text = content.get_text()
 
             date = self.__precess_date(content.find("date"))
             topics = list(map(string_converter, content.find("topics").findAll("d")))
@@ -48,13 +53,10 @@ class ReutersParser:
             body = self.__extract_text(content.find("text").find("body"))
             dateline = self.__extract_text(content.find("text").find("dateline"))
             location, longitude, latitude = self.__get_location_details(
-                dateline, title, body
+                dateline, title, whole_rueter_text
             )
-
-            if location == None:
-                print((location, longitude, latitude))
-
-                exit()
+            temporal_expressions = self.__get_temporal_expressions(whole_rueter_text)
+            georeferences = self.__get_georeferences(whole_rueter_text)
 
             record = {
                 "date": date,
@@ -72,7 +74,10 @@ class ReutersParser:
                     "lat": latitude if latitude != "" else "0",
                     "lon": longitude if longitude != "" else "0",
                 },
+                "temporal_expressions": temporal_expressions,
+                "georeferences": georeferences,
             }
+
             records.append(action)
             records.append(record)
 
@@ -82,10 +87,9 @@ class ReutersParser:
         return records
 
     def __get_location_details(
-        self, dateline: str, title: str, body: str
+        self, dateline: str, title: str, whole_rueter_text: str
     ) -> Tuple[str, float, float]:
-        # try to get locations from dateline
-        texts = [dateline, title, body]
+        texts = [dateline, title]
 
         for text in texts:
             text_location_details = self.__extract_geocode_from_text(text)
@@ -93,7 +97,7 @@ class ReutersParser:
             if text_location_details:
                 return text_location_details
 
-        return "Null Island", 0, 0
+        return self.__estimate_geolocation(whole_rueter_text)
 
     def __extract_locations(self, text: str) -> list:
         text = str(text)
@@ -132,3 +136,34 @@ class ReutersParser:
 
         text = text[:4] + str.lower(text[4]) + str.lower(text[5]) + text[6:]
         return re.sub(r"\..*$", "", text)
+
+    def __get_temporal_expressions(self, whole_rueter_text: str) -> list[str]:
+        result = nlp(whole_rueter_text)
+
+        temporal_expressions = [ent.text for ent in result.ents if ent.label_ == "DATE"]
+
+        return temporal_expressions
+
+    def __get_georeferences(self, whole_rueter_text) -> list[Tuple[float, float]]:
+        locations = set(self.__extract_locations(whole_rueter_text))
+
+        georeferences = list(map(lambda x: self.__extract_geocode(x), locations))
+        return [geocode for geocode in georeferences if geocode != False]
+
+    def __estimate_geolocation(
+        self, whole_rueter_text: str
+    ) -> Tuple[str, float, float]:
+        georeferences = self.__get_georeferences(whole_rueter_text)
+        number_of_georeferences = len(georeferences)
+        if number_of_georeferences:
+            summmed_georeferences = reduce(
+                lambda x, y: (x[0] + y[0], x[1] + y[1]), georeferences
+            )
+
+            return (
+                "IDK",
+                summmed_georeferences[0] / number_of_georeferences,
+                summmed_georeferences[1] / number_of_georeferences,
+            )
+        else:
+            return "Null Island", 0, 0

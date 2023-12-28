@@ -100,7 +100,12 @@ class IndexInitiator:
                 "location": {
                     "type": "geo_point",
                 },
-                # TODO: return multiple georeferences
-                # avg to estimate geolocation
+                "temporal_expressions": {
+                    "type": "keyword",
+                    "ignore_above": 256,
+                },
+                "georeferences": {
+                    "type": "geo_point",
+                },
             }
         }

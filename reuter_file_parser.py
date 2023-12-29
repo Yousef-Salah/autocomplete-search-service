@@ -76,6 +76,7 @@ class ReutersParser:
                 },
                 "temporal_expressions": temporal_expressions,
                 "georeferences": georeferences,
+                "georeferences_string": list(map(lambda x: str(x), georeferences)),
             }
 
             records.append(action)
@@ -145,7 +146,7 @@ class ReutersParser:
         return temporal_expressions
 
     def __get_georeferences(self, whole_rueter_text) -> list[Tuple[float, float]]:
-        locations = set(self.__extract_locations(whole_rueter_text))
+        locations = self.__extract_locations(whole_rueter_text)
 
         georeferences = list(map(lambda x: self.__extract_geocode(x), locations))
         return [geocode for geocode in georeferences if geocode != False]

@@ -9,7 +9,7 @@ from reuter_file_parser import ReutersParser
 
 index_name = "reuters"
 
-# es = IndexInitiator(index_name).create()
+es = IndexInitiator(index_name).create()
 es = Elasticsearch("http://localhost:9200")
 
 folder_path = "data"

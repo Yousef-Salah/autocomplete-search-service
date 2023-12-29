@@ -34,12 +34,15 @@ class IndexInitiator:
         return {
             "number_of_shards": 2,
             "number_of_replicas": 1,
+            "index": {
+                "max_ngram_diff": 7,
+            },
             "analysis": {
                 "filter": {
                     "ngram_filter": {
                         "type": "ngram",
                         "min_gram": 3,
-                        "max_gram": 4,
+                        "max_gram": 10,
                     }
                 },
                 "analyzer": {
@@ -106,6 +109,9 @@ class IndexInitiator:
                 },
                 "georeferences": {
                     "type": "geo_point",
+                },
+                "georeferences_string": {
+                    "type": "keyword",
                 },
             }
         }

@@ -53,9 +53,20 @@ def autocomplete():
     return jsonify(response["hits"]["hits"])
 
 
-@app.route("/home")
-def home():
-    return ""
+@app.route("/daily-distribution")
+def daily_distribution():
+    query = {
+        "size": 0,
+        "aggs": {
+            "documents_over_time": {
+                "date_histogram": {"field": "date", "calendar_interval": "1d"}
+            }
+        },
+    }
+
+    response = es.search(index=INDEX_NAME, body=query)
+
+    return jsonify(response["aggregations"]["documents_over_time"])
 
 
 @app.route("/query")
@@ -93,6 +104,11 @@ def query():
     response = es.search(index=INDEX_NAME, body=query)
 
     return jsonify(response["hits"]["hits"])
+
+
+@app.route("top-10-georefernces")
+def top_10_georeferences():
+    return ""
 
 
 if __name__ == "__main__":

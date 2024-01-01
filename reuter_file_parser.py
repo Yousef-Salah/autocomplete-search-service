@@ -32,8 +32,6 @@ class ReutersParser:
 
         counter = 1
         for content in reuters:
-            if counter % 10 == 0:
-                return records
             string_converter = lambda x: x.get_text()
 
             whole_rueter_text = content.get_text()
@@ -57,17 +55,19 @@ class ReutersParser:
             )
             temporal_expressions = self.__get_temporal_expressions(whole_rueter_text)
             georeferences = self.__get_georeferences(whole_rueter_text)
+            author = self.__process_author(content.find("author"))
 
             record = {
                 "date": date,
                 "topics": topics,
                 "places": places,
                 "people": people,
+                "author": author,
                 "orgs": orgs,
                 "exchanges": exchanges,
                 "companies": companies,
                 "title": title,
-                "body": body,
+                "content": body,
                 "dateline": dateline,
                 "place": location,
                 "location": {
@@ -162,9 +162,30 @@ class ReutersParser:
             )
 
             return (
+                # TODO: Get location from geo_point
                 "IDK",
                 summmed_georeferences[0] / number_of_georeferences,
                 summmed_georeferences[1] / number_of_georeferences,
             )
         else:
             return "Null Island", 0, 0
+
+    def __process_author(self, author_text_element) -> dict:
+        if author_text_element:
+            author_name: str = author_text_element.get_text()
+
+            if author_name:
+                author_name = author_name.strip()
+                terms = author_name.split(" ")
+                first_name: str = terms[1]
+                last_name: str = terms[2].replace(",", "")
+
+            return {
+                "first_name": first_name,
+                "last_name": last_name,
+            }
+
+        return {
+            "first_name": "",
+            "last_name": "",
+        }

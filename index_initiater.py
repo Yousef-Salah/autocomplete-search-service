@@ -43,17 +43,46 @@ class IndexInitiator:
                         "type": "ngram",
                         "min_gram": 3,
                         "max_gram": 10,
-                    }
+                    },
+                    "my_custom_stop_words_filter": {
+                        "type": "stop",
+                        "ignore_case": True,
+                        "stopwords": ["the", "and", "is"],
+                    },
+                    "less_than_3_filter": {
+                        "type": "length",
+                        "min": 3,
+                    },
+                    "english_stemmer": {
+                        "type": "stemmer",
+                        "language": "english",
+                    },
                 },
                 "analyzer": {
+                    "title_processing": {
+                        "type": "custom",
+                        "tokenizer": "standard",
+                        "char_filter": ["html_strip"],
+                        "filter": [
+                            "lowercase",
+                            "ngram_filter",
+                            "my_custom_stop_words_filter",
+                            "less_than_3_filter",
+                        ],
+                    },
                     "text_processing": {
                         "type": "custom",
                         "tokenizer": "standard",
-                        "filter": ["lowercase", "ngram_filter"],
-                    }
+                        "char_filter": ["html_strip"],
+                        "filter": [
+                            "lowercase",
+                            "my_custom_stop_words_filter",
+                            "less_than_3_filter",
+                            "english_stemmer",
+                        ],
+                    },
                 },
             },
-            "number_of_shards": 1,
         }
 
     def __get_mappings(self):
@@ -75,6 +104,13 @@ class IndexInitiator:
                     "type": "keyword",
                     "ignore_above": 256,
                 },
+                "author": {
+                    "type": "nested",
+                    "properties": {
+                        "first_name": {"type": "keyword"},
+                        "last_name": {"type": "keyword"},
+                    },
+                },
                 "orgs": {
                     "type": "keyword",
                     "ignore_above": 256,
@@ -89,7 +125,7 @@ class IndexInitiator:
                 },
                 "title": {
                     "type": "text",
-                    "analyzer": "text_processing",
+                    "analyzer": "title_processing",
                 },
                 # TODO: make sure to get rid of tags elements
                 "content": {

@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+.autocomplete-container {
+    text-align: center;
+}
+
+.autocomplete-input {
+    padding: 8px;
+    width: 300px;
+}
+
+.autocomplete-results {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0;
+}
+
+.autocomplete-results li {
+    padding: 5px;
+    cursor: pointer;
+}
+
+.autocomplete-results li:hover {
+    background-color: #f0f0f0;
+}

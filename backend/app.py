@@ -1,7 +1,7 @@
 from functools import wraps
 
 from elasticsearch import Elasticsearch
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
@@ -38,17 +38,20 @@ def validate_query_endpoint_inputs(func):
     return validate
 
 
-@app.route("/autocomplete")
+@app.route("/autocomplete", methods=["POST"])
 @validate_autocomplete_endpoint_inputs
 def autocomplete():
+    print("OK", f"searcheed text is {request.get_json()}")
     params = request.get_json()
     text = params["text"]
+
     query = {
         "query": {"match": {"title": {"query": text, "analyzer": "text_processing"}}},
         "_source": ["title"],
     }
 
     response = es.search(index=INDEX_NAME, body=query)
+    print(response)
 
     return jsonify(response["hits"]["hits"])
 
@@ -106,9 +109,14 @@ def query():
     return jsonify(response["hits"]["hits"])
 
 
-@app.route("top-10-georefernces")
+@app.route("/top-10-georefernces")
 def top_10_georeferences():
     return ""
+
+
+@app.route("/home")
+def home():
+    return render_template("index.html")
 
 
 if __name__ == "__main__":

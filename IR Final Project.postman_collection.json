@@ -45,7 +45,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"query\": {\r\n        \"match\": {\r\n            \"title\": {\r\n                \"query\": \"COMMERCE\",\r\n                \"analyzer\": \"text_processing\"\r\n            }\r\n        }\r\n    },\r\n    \"_source\": [\"title\"]\r\n}\r\n// {\r\n//     \"query\": {\r\n//         \"match_all\": {}\r\n//     }\r\n// }",
+					"raw": "// {\r\n//     \"query\": {\r\n//         \"match\": {\r\n//             \"title\": {\r\n//                 \"query\": \"COMMERCE\",\r\n//                 \"analyzer\": \"text_processing\"\r\n//             }\r\n//         }\r\n//     },\r\n//     \"_source\": [\"title\"]\r\n// }\r\n{\r\n    \"query\": {\r\n        \"match_all\": {}\r\n    },\r\n    \"_source\": [\"content\", \"title\", \"author\"]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -134,7 +134,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"size\": 0,\r\n    \"aggs\": {\r\n        \"value_count\": {\r\n            \"scripted_metric\": {\r\n                \"init_script\": \"state.map = new HashMap()\",\r\n                \"map_script\": \"if (params._source[params.field] instanceof List) {for (val in params._source[params.field]){state.map[val] = state.map.getOrDefault(val,0)+1}} else {state.map[params._source[params.field].value] = state.map.getOrDefault(params._source[params.field].value,0)+1}\",\r\n                \"combine_script\": \"return state.map\",\r\n                \"reduce_script\": \"Map m = new HashMap();for (map in states){map.forEach((k,v)->m[k]=m.getOrDefault(k,0)+v)} return m\",\r\n                \"params\": {\r\n                    \"field\": \"georeferences_string\"\r\n                }\r\n            }\r\n        },\r\n        \"aggs\": {\r\n            \"sort\": {\r\n                \"order\": \"desc\"\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"top_georeferences\": {\r\n//       \"terms\": {\r\n//         \"field\": \"georeferences_string\",\r\n//         \"size\": 10\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"top_georefs\": {\r\n//       \"nested\": {\r\n//         \"path\": \"georeferences\"  // Adjust the path to the correct nested field\r\n//       },\r\n//       \"aggs\": {\r\n//         \"georefs\": {\r\n//           \"terms\": {\r\n//             \"script\": {\r\n//               \"source\": \"doc['georeferences'].latlon ? doc['georeferences'].latlon.toString() : doc['location'].value.toString()\"\r\n//             },\r\n//             \"size\": 10\r\n//           }\r\n//         }\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n// {\r\n//     \"query\": {\r\n//         \"match_all\": {}\r\n//     },\r\n//         \"_source\": [\"georeferences_string\", \"location\"]\r\n// }\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"nested_keywords\": {\r\n//       \"nested\": {\r\n//         \"path\": \"georeferences_string\"\r\n//       },\r\n//       \"aggs\": {\r\n//         \"keyword_stats\": {\r\n//           \"terms\": {\r\n//             \"field\": \"georeferences_string\",\r\n//             \"size\": 1,  // Set to 1 to get the top keyword\r\n//             \"order\": {\r\n//               \"_count\": \"desc\"\r\n//             }\r\n//           }\r\n//         }\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"top_georeferences\": {\r\n//       \"terms\": {\r\n//         \"script\": {\r\n//           \"source\": \"def geo = doc['georeferences'];if (geo.size() > 0) {def result = [];for (int i = 0; i < geo.size(); i++) {result.add(geo[i].toString());}return result;}\"\r\n//         },\r\n//         \"size\": 100\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"top_georeferences\": {\r\n//       \"terms\": {\r\n//         \"script\": {\r\n//           \"source\": \"if (doc['georeferences'].size() > 0) { return doc['georeferences'].value.toString(); } else { return null; }\"\r\n//         }\r\n//         // ,\r\n//         // \"size\": 10\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"top_georeferences\": {\r\n//       \"terms\": {\r\n//         \"script\": {\r\n//           \"source\": \"def geo = doc['georeferences']; return geo.size() > 0 ? geo.stream().findFirst().map({ it.toString() }).orElse(null) : null;\"\r\n//         },\r\n//         \"size\": 10\r\n//       }\r\n//     }\r\n//   }\r\n// }",
+					"raw": "{\r\n  \"size\": 0,\r\n  \"aggs\": {\r\n    \"geo_point_counts\": {\r\n      \"terms\": {\r\n        \"field\": \"georeferences_string\",\r\n        \"size\": 10 \r\n      }\r\n    }\r\n  }\r\n}\r\n\r\n\r\n\r\n// {\r\n//     \"size\": 0,\r\n//     \"aggs\": {\r\n//         \"value_count\": {\r\n//             \"scripted_metric\": {\r\n//                 \"init_script\": \"state.map = new HashMap()\",\r\n//                 \"map_script\": \"if (params._source[params.field] instanceof List) {for (val in params._source[params.field]){state.map[val] = state.map.getOrDefault(val,0)+1}} else {state.map[params._source[params.field].value] = state.map.getOrDefault(params._source[params.field].value,0)+1}\",\r\n//                 \"combine_script\": \"return state.map\",\r\n//                 \"reduce_script\": \"Map m = new HashMap();for (map in states){map.forEach((k,v)->m[k]=m.getOrDefault(k,0)+v)} return m\",\r\n//                 \"params\": {\r\n//                     \"field\": \"georeferences_string\"\r\n//                 }\r\n//             }\r\n//         },\r\n//         \"top_hits_sorted\": {\r\n//             \"top_hits\": {\r\n//                 \"size\": 100, // Adjust as needed\r\n//                 \"sort\": [\r\n//                     {\r\n//                         \"value_count\": \"asc\"\r\n//                     } // Sort by keys in ascending order\r\n//                 ]\r\n//             }\r\n//         }\r\n//     }\r\n// }\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -164,7 +164,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"size\":0,\r\n  \"aggs\":{\r\n    \"value_count\":{\r\n      \"scripted_metric\": {\r\n        \"init_script\": \"state.map = new HashMap()\",\r\n        \"map_script\": \"if (params._source[params.field] instanceof List) {for (val in params._source[params.field]){state.map[val] = state.map.getOrDefault(val,0)+1}} else {state.map[params._source[params.field].value] = state.map.getOrDefault(params._source[params.field].value,0)+1}\",\r\n        \"combine_script\": \"return state.map\",\r\n        \"reduce_script\": \"Map m = new HashMap();for (map in states){map.forEach((k,v)->m[k]=m.getOrDefault(k,0)+v)} return m\",\r\n        \"params\":{\r\n          \"field\": \"georeferences_string\"\r\n        }\r\n      }\r\n    }\r\n  }\r\n}\r\n\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"top_georeferences\": {\r\n//       \"terms\": {\r\n//         \"field\": \"georeferences_string\",\r\n//         \"size\": 10\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"top_georefs\": {\r\n//       \"nested\": {\r\n//         \"path\": \"georeferences\"  // Adjust the path to the correct nested field\r\n//       },\r\n//       \"aggs\": {\r\n//         \"georefs\": {\r\n//           \"terms\": {\r\n//             \"script\": {\r\n//               \"source\": \"doc['georeferences'].latlon ? doc['georeferences'].latlon.toString() : doc['location'].value.toString()\"\r\n//             },\r\n//             \"size\": 10\r\n//           }\r\n//         }\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n// {\r\n//     \"query\": {\r\n//         \"match_all\": {}\r\n//     },\r\n//         \"_source\": [\"georeferences_string\", \"location\"]\r\n// }\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"nested_keywords\": {\r\n//       \"nested\": {\r\n//         \"path\": \"georeferences_string\"\r\n//       },\r\n//       \"aggs\": {\r\n//         \"keyword_stats\": {\r\n//           \"terms\": {\r\n//             \"field\": \"georeferences_string\",\r\n//             \"size\": 1,  // Set to 1 to get the top keyword\r\n//             \"order\": {\r\n//               \"_count\": \"desc\"\r\n//             }\r\n//           }\r\n//         }\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"top_georeferences\": {\r\n//       \"terms\": {\r\n//         \"script\": {\r\n//           \"source\": \"def geo = doc['georeferences'];if (geo.size() > 0) {def result = [];for (int i = 0; i < geo.size(); i++) {result.add(geo[i].toString());}return result;}\"\r\n//         },\r\n//         \"size\": 100\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"top_georeferences\": {\r\n//       \"terms\": {\r\n//         \"script\": {\r\n//           \"source\": \"if (doc['georeferences'].size() > 0) { return doc['georeferences'].value.toString(); } else { return null; }\"\r\n//         }\r\n//         // ,\r\n//         // \"size\": 10\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n// {\r\n//   \"size\": 0,\r\n//   \"aggs\": {\r\n//     \"top_georeferences\": {\r\n//       \"terms\": {\r\n//         \"script\": {\r\n//           \"source\": \"def geo = doc['georeferences']; return geo.size() > 0 ? geo.stream().findFirst().map({ it.toString() }).orElse(null) : null;\"\r\n//         },\r\n//         \"size\": 10\r\n//       }\r\n//     }\r\n//   }\r\n// }\r\n",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -237,6 +237,36 @@
 					],
 					"path": [
 						"daily-distribution"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \r\n  \"analyzer\": \"text_processing\",\r\n  \"text\": \"this is a  xa3 testing\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ELASTICSEARCH_URL}}/{{INDEX_NAME}}/_analyze",
+					"host": [
+						"{{ELASTICSEARCH_URL}}"
+					],
+					"path": [
+						"{{INDEX_NAME}}",
+						"_analyze"
 					]
 				}
 			},

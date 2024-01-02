@@ -7,6 +7,36 @@
 	},
 	"item": [
 		{
+			"name": "Autocomplete-es",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"query\": {\r\n        \"match\": {\r\n            \"title\": {\r\n                \"query\": \"COMMERCE\",\r\n                \"analyzer\": \"text_processing\"\r\n            }\r\n        }\r\n    },\r\n    \"_source\": [\"title\"]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ELASTICSEARCH_URL}}/{{INDEX_NAME}}/_search",
+					"host": [
+						"{{ELASTICSEARCH_URL}}"
+					],
+					"path": [
+						"{{INDEX_NAME}}",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Autocomplete-api",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -30,36 +60,6 @@
 					],
 					"path": [
 						"autocomplete"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Autocomplete-es",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "// {\r\n//     \"query\": {\r\n//         \"match\": {\r\n//             \"title\": {\r\n//                 \"query\": \"COMMERCE\",\r\n//                 \"analyzer\": \"text_processing\"\r\n//             }\r\n//         }\r\n//     },\r\n//     \"_source\": [\"title\"]\r\n// }\r\n{\r\n    \"query\": {\r\n        \"match_all\": {}\r\n    },\r\n    \"_source\": [\"content\", \"title\", \"author\"]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{ELASTICSEARCH_URL}}/{{INDEX_NAME}}/_search",
-					"host": [
-						"{{ELASTICSEARCH_URL}}"
-					],
-					"path": [
-						"{{INDEX_NAME}}",
-						"_search"
 					]
 				}
 			},
@@ -104,7 +104,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "// {\r\n//     \"query\": {\r\n//         \"multi_match\": {\r\n//             \"query\": \"BAH\",\r\n//             \"fields\": [\r\n//                 \"title^3\",\r\n//                 \"body\"\r\n//             ]\r\n//         }\r\n//     },\r\n//     \"sort\": [\r\n//         {\r\n//             \"_geo_distance\": {\r\n//                 \"location\": {\r\n//                     \"lat\": 40.714224,\r\n//                     \"lon\": -73.961452\r\n//                 },\r\n//                 \"order\": \"asc\",\r\n//                 \"unit\": \"km\"\r\n//             }\r\n//         },\r\n//         {\r\n//             \"_geo_distance\": {\r\n//                 \"georeferences\": {\r\n//                     \"lat\": 19.4326296,\r\n//                     \"lon\": -99.1331785\r\n//                 },\r\n//                 \"order\": \"asc\",\r\n//                 \"unit\": \"km\"\r\n//             }\r\n//         },\r\n//         {\r\n//             \"date\": \"desc\"\r\n//         }\r\n//     ]\r\n// }\r\n\r\n{\r\n    \"query\": {\r\n        \"match_all\": {}\r\n    },\r\n    \"_source\": [\"georeferences\", \"georeferences_string\"]\r\n}",
+					"raw": "{\r\n    \"query\": {\r\n        \"multi_match\": {\r\n            \"query\": \"BAH\",\r\n            \"fields\": [\r\n                \"title^3\",\r\n                \"body\"\r\n            ]\r\n        }\r\n    },\r\n    \"sort\": [\r\n        {\r\n            \"_geo_distance\": {\r\n                \"location\": {\r\n                    \"lat\": 40.714224,\r\n                    \"lon\": -73.961452\r\n                },\r\n                \"order\": \"asc\",\r\n                \"unit\": \"km\"\r\n            }\r\n        },\r\n        {\r\n            \"_geo_distance\": {\r\n                \"georeferences\": {\r\n                    \"lat\": 19.4326296,\r\n                    \"lon\": -99.1331785\r\n                },\r\n                \"order\": \"asc\",\r\n                \"unit\": \"km\"\r\n            }\r\n        },\r\n        {\r\n            \"date\": \"desc\"\r\n        }\r\n    ]\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -223,7 +223,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"size\": 0,\r\n  \"aggs\": {\r\n    \"documents_over_time\": {\r\n      \"date_histogram\": {\r\n        \"field\": \"date\",\r\n        \"calendar_interval\": \"1d\"\r\n      }\r\n    }\r\n  }\r\n}",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -252,7 +252,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \r\n  \"analyzer\": \"text_processing\",\r\n  \"text\": \"this is a  xa3 testing\"\r\n}\r\n",
+					"raw": "{\r\n  \"analyzer\": \"text_processing\",\r\n  \"text\": \"this is a  xa3 testing\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"

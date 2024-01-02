@@ -1,9 +1,12 @@
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
+    text-align: center;
 }
 
 .autocomplete-container {
+    text-align: center;
+    display: block;
     text-align: center;
 }
 

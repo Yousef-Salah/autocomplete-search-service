@@ -32,6 +32,9 @@ class ReutersParser:
 
         counter = 1
         for content in reuters:
+            if counter % 100 == 0:
+                return records
+
             string_converter = lambda x: x.get_text()
 
             whole_rueter_text = content.get_text()
@@ -131,12 +134,14 @@ class ReutersParser:
         text = text.strip()
         text: str = unidecode(text)
         text = re.sub(r"\..*$", "", text)
+        text = re.sub(" +", " ", text)
 
         if len(text) != valid_date_length:
             text = "0" + text
 
         text = text[:4] + str.lower(text[4]) + str.lower(text[5]) + text[6:]
-        return re.sub(r"\..*$", "", text)
+
+        return text
 
     def __get_temporal_expressions(self, whole_rueter_text: str) -> list[str]:
         result = nlp(whole_rueter_text)

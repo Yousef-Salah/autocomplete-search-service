@@ -1,25 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Autocomplete with Elasticsearch</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div>
+      <div>
+        <h1>Tweets Daily Distribution</h1>
+        <iframe
+          src="http://localhost:5601/app/dashboards#/create?embed=true&_g=(refreshInterval:(pause:!t,value:60000),time:(from:'1984-08-27T10:14:18.689Z',to:'1990-09-16T18:29:50.198Z'))&_a=(panels:!((embeddableConfig:(attributes:(description:'',references:!((id:faaba4f8-62e6-41d4-9252-65cbc19227f7,name:indexpattern-datasource-layer-unifiedHistogram,type:index-pattern)),state:(adHocDataViews:(),datasourceStates:(formBased:(layers:(unifiedHistogram:(columnOrder:!(date_column,count_column),columns:(count_column:(dataType:number,isBucketed:!f,label:'Count%20of%20records',operationType:count,params:(format:(id:number,params:(decimals:0))),scale:ratio,sourceField:___records___),date_column:(dataType:date,isBucketed:!t,label:date,operationType:date_histogram,params:(interval:auto),scale:interval,sourceField:date)))))),filters:!(),internalReferences:!(),query:(language:kuery,query:''),visualization:(axisTitlesVisibilitySettings:(x:!f,yLeft:!f,yRight:!f),fittingFunction:None,gridlinesVisibilitySettings:(x:!t,yLeft:!t,yRight:!f),labelsOrientation:(x:0,yLeft:0,yRight:0),layers:!((accessors:!(count_column),layerId:unifiedHistogram,layerType:data,seriesType:line,xAccessor:date_column,yConfig:!((forAccessor:count_column)))),legend:(isVisible:!t,legendSize:xlarge,position:right,shouldTruncate:!f),preferredSeriesType:line,showCurrentTimeMarker:!t,tickLabelsVisibilitySettings:(x:!t,yLeft:!t,yRight:!f),valueLabels:hide)),title:'Dailty%20Distribution',type:lens,visualizationType:lnsXY)),gridData:(h:15,i:'4379676c-3fd2-4b61-8e64-19670c6af047',w:24,x:0,y:0),panelIndex:'4379676c-3fd2-4b61-8e64-19670c6af047',type:lens,version:'8.10.4')))"
+          height="600"
+          width="800"
+        ></iframe>
+      </div>
 
-</head>
-<body>
+      <h1>Autocomplete Service</h1>
+      <div class="autocomplete-container">
+        <label for="searchInput">Search:</label>
+        <input
+          type="text"
+          id="searchInput"
+          class="autocomplete-input"
+          autocomplete="off"
+        />
+        <ul id="autocompleteResults" class="autocomplete-results"></ul>
+      </div>
+    </div>
 
-<div class="autocomplete-container">
-    <label for="searchInput">Search:</label>
-    <input type="text" id="searchInput" class="autocomplete-input" autocomplete="off">
-    <ul id="autocompleteResults" class="autocomplete-results"></ul>
-</div>
-
-
-
-
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script src="{{ url_for('static', filename='app.js') }}"></script>
-
-</body>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
 </html>

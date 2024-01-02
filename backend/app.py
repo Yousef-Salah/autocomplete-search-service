@@ -11,14 +11,17 @@ INDEX_NAME = "reuters"
 def validate_autocomplete_endpoint_inputs(func):
     @wraps(func)
     def validate(*args, **kwargs):
-        # TODO: validtion rules for input
-        # inputs = request.get_json()["features"]
-        # check_arrays_length = map(lambda x: len(x) == number_of_features, inputs)
+        text: str = request.get_json()["text"]
 
-        # if not any(check_arrays_length):
-        #     return jsonify(message="Incorrect data structre."), 422
-
-        return func(*args, *kwargs)
+        if type(text) == str and len(text.strip()) >= 3:
+            return func(*args, *kwargs)
+        else:
+            return (
+                jsonify(
+                    message="Text argument must be string and at least consist of 3 characters"
+                ),
+                422,
+            )
 
     return validate
 
@@ -26,14 +29,41 @@ def validate_autocomplete_endpoint_inputs(func):
 def validate_query_endpoint_inputs(func):
     @wraps(func)
     def validate(*args, **kwargs):
-        # TODO: validtion rules for input
-        # inputs = request.get_json()["features"]
-        # check_arrays_length = map(lambda x: len(x) == number_of_features, inputs)
+        is_valid = True
+        arguments = request.get_json()
 
-        # if not any(check_arrays_length):
-        #     return jsonify(message="Incorrect data structre."), 422
+        text: str = arguments["text"]
+        longitude = arguments["longitude"]
+        latitude = arguments["latitude"]
 
-        return func(*args, *kwargs)
+        if type(text) != str or len(text.strip()) < 3:
+            is_valid = False
+
+        # The latitude must be a number between -90 and 90
+        # longitude between -180 and 180
+        if type(latitude) == int or type(latitude) == float:
+            latitude = float(latitude)
+            if not (latitude <= 90) or not (latitude >= -90):
+                is_valid = False
+        else:
+            is_valid = False
+
+        if type(longitude) == int or type(longitude) == float:
+            longitude = float(longitude)
+            if not (longitude <= 180) or not (longitude >= -180):
+                is_valid = False
+        else:
+            is_valid = False
+
+        if is_valid:
+            return func(*args, *kwargs)
+        else:
+            return (
+                jsonify(
+                    message="Text argument must be string and at least consist of 3 characters \n latitude must be a number between [-90, 90] and the longitude between [-180, 180]."
+                ),
+                422,
+            )
 
     return validate
 
@@ -111,7 +141,18 @@ def query():
 
 @app.route("/top-10-georefernces")
 def top_10_georeferences():
-    return ""
+    query = {
+        "size": 0,
+        "aggs": {
+            "top_georeferences": {
+                "terms": {"field": "georeferences_string", "size": 10}
+            }
+        },
+    }
+
+    response = es.search(index=INDEX_NAME, body=query)
+
+    return jsonify(response["aggregations"]["top_georeferences"]["buckets"])
 
 
 @app.route("/home")

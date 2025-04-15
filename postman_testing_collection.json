@@ -1,0 +1,313 @@
+{
+	"info": {
+		"_postman_id": "071caf83-86fb-4667-8ef1-374d43ed0a7d",
+		"name": "IR Final Project",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20208467"
+	},
+	"item": [
+		{
+			"name": "Autocomplete-es",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"query\": {\r\n        \"match\": {\r\n            \"title\": {\r\n                \"query\": \"COMMERCE\",\r\n                \"analyzer\": \"text_processing\"\r\n            }\r\n        }\r\n    },\r\n    \"_source\": [\"title\"]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ELASTICSEARCH_URL}}/{{INDEX_NAME}}/_search",
+					"host": [
+						"{{ELASTICSEARCH_URL}}"
+					],
+					"path": [
+						"{{INDEX_NAME}}",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Autocomplete-api",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"text\": \"BAHIA\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{APP_URL}}/autocomplete",
+					"host": [
+						"{{APP_URL}}"
+					],
+					"path": [
+						"autocomplete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Query-api",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"text\": \"BAHAA\",\r\n    \"longitude\": 13,\r\n    \"latitude\": -88\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{APP_URL}}/query",
+					"host": [
+						"{{APP_URL}}"
+					],
+					"path": [
+						"query"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Query-es",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"query\": {\r\n        \"multi_match\": {\r\n            \"query\": \"BAH\",\r\n            \"fields\": [\r\n                \"title^3\",\r\n                \"body\"\r\n            ]\r\n        }\r\n    },\r\n    \"sort\": [\r\n        {\r\n            \"_geo_distance\": {\r\n                \"location\": {\r\n                    \"lat\": 40.714224,\r\n                    \"lon\": -73.961452\r\n                },\r\n                \"order\": \"asc\",\r\n                \"unit\": \"km\"\r\n            }\r\n        },\r\n        {\r\n            \"_geo_distance\": {\r\n                \"georeferences\": {\r\n                    \"lat\": 19.4326296,\r\n                    \"lon\": -99.1331785\r\n                },\r\n                \"order\": \"asc\",\r\n                \"unit\": \"km\"\r\n            }\r\n        },\r\n        {\r\n            \"date\": \"desc\"\r\n        }\r\n    ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ELASTICSEARCH_URL}}/{{INDEX_NAME}}/_search",
+					"host": [
+						"{{ELASTICSEARCH_URL}}"
+					],
+					"path": [
+						"{{INDEX_NAME}}",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Top 10-es",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"size\": 0,\r\n  \"aggs\": {\r\n    \"geo_point_counts\": {\r\n      \"terms\": {\r\n        \"field\": \"georeferences_string\",\r\n        \"size\": 10 \r\n      }\r\n    }\r\n  }\r\n}\r\n\r\n\r\n\r\n// {\r\n//     \"size\": 0,\r\n//     \"aggs\": {\r\n//         \"value_count\": {\r\n//             \"scripted_metric\": {\r\n//                 \"init_script\": \"state.map = new HashMap()\",\r\n//                 \"map_script\": \"if (params._source[params.field] instanceof List) {for (val in params._source[params.field]){state.map[val] = state.map.getOrDefault(val,0)+1}} else {state.map[params._source[params.field].value] = state.map.getOrDefault(params._source[params.field].value,0)+1}\",\r\n//                 \"combine_script\": \"return state.map\",\r\n//                 \"reduce_script\": \"Map m = new HashMap();for (map in states){map.forEach((k,v)->m[k]=m.getOrDefault(k,0)+v)} return m\",\r\n//                 \"params\": {\r\n//                     \"field\": \"georeferences_string\"\r\n//                 }\r\n//             }\r\n//         },\r\n//         \"top_hits_sorted\": {\r\n//             \"top_hits\": {\r\n//                 \"size\": 100, // Adjust as needed\r\n//                 \"sort\": [\r\n//                     {\r\n//                         \"value_count\": \"asc\"\r\n//                     } // Sort by keys in ascending order\r\n//                 ]\r\n//             }\r\n//         }\r\n//     }\r\n// }\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ELASTICSEARCH_URL}}/{{INDEX_NAME}}/_search",
+					"host": [
+						"{{ELASTICSEARCH_URL}}"
+					],
+					"path": [
+						"{{INDEX_NAME}}",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Top 10-api",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{APP_URL}}/top-10-georefernces",
+					"host": [
+						"{{APP_URL}}"
+					],
+					"path": [
+						"top-10-georefernces"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Distribution over time-es",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"size\": 0,\r\n  \"aggs\": {\r\n    \"documents_over_time\": {\r\n      \"date_histogram\": {\r\n        \"field\": \"date\",\r\n        \"calendar_interval\": \"1d\"\r\n      }\r\n    }\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ELASTICSEARCH_URL}}/{{INDEX_NAME}}/_search",
+					"host": [
+						"{{ELASTICSEARCH_URL}}"
+					],
+					"path": [
+						"{{INDEX_NAME}}",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Distribution over time-api",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{APP_URL}}/daily-distribution",
+					"host": [
+						"{{APP_URL}}"
+					],
+					"path": [
+						"daily-distribution"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"analyzer\": \"text_processing\",\r\n  \"text\": \"this is a  xa3 testing\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ELASTICSEARCH_URL}}/{{INDEX_NAME}}/_analyze",
+					"host": [
+						"{{ELASTICSEARCH_URL}}"
+					],
+					"path": [
+						"{{INDEX_NAME}}",
+						"_analyze"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "APP_URL",
+			"value": "http://127.0.0.1:5000",
+			"type": "string"
+		},
+		{
+			"key": "ELASTICSEARCH_URL",
+			"value": "http://localhost:9200",
+			"type": "string"
+		},
+		{
+			"key": "INDEX_NAME",
+			"value": "reuters",
+			"type": "string"
+		}
+	]
+}
